@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  triton:
+    # Using NVIDIA Triton Server Python and ONNX
+    image: nvcr.io/nvidia/tritonserver:23.12-py3
+    container_name: triton_server
+    # Showing Triton where our model
+    command: tritonserver --model-repository=/models
+    ports:
+      - "8001:8001"  # gRPC port in order to connect FastAPI
+      - "8002:8002"  # Metrics port(useful for monitoring)
+    volumes:
+      # Putting our model folder into container
+      - ./triton_model_repository:/models
+    # Ths block allow Triton to run on our GPU
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    # Тритон using a lot of shared memory for tensors, thats why we need increased limit    shm_size: '2g'
+
+  fastapi:
+    # Constructing FastAPI container
+    build: ./fastapi_app
+    container_name: fastapi_server
+    ports:
+      - "8000:8000"  
+    depends_on:
+      - triton       
+    environment:
+      - PYTHONUNBUFFERED=1 

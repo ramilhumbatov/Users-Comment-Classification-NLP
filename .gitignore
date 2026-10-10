@@ -1,0 +1,12 @@
+# Ignoring our model weights
+*.pth
+*.onnx
+best_model.pth
+
+# Ignoring hidden cache files
+__pycache__/
+.ipynb_checkpoints/
+
+# Ignoring csv files
+*.csv
+data/
